@@ -19,6 +19,7 @@ import reviewRoutes from './routes/reviewRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import statsRoutes from './routes/statsRoutes.js';
 
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -35,7 +36,14 @@ app.use(cookieParser());
 app.use(compression());
 
 // Basic rate limit
-app.use('/api', rateLimit({ windowMs: 60 * 1000, max: 120 }));
+const globalRateLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: process.env.API_RATE_LIMIT_MAX || 120,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+app.use('/api', globalRateLimiter);
 
 // Static posters
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
