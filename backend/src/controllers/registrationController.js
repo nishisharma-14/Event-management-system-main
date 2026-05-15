@@ -63,3 +63,27 @@ export const registerForEvent = async (req, res) => {
     });
   }
 };
+export const checkInParticipant = async (req, res) => {
+  try {
+    const registration = await Registration.findById(req.params.id);
+
+    if (!registration) {
+      return res.status(404).json({
+        message: 'Registration not found'
+      });
+    }
+
+    registration.checkedIn = true;
+    await registration.save();
+
+    res.status(200).json({
+      message: 'Participant checked in successfully',
+      registration
+    });
+
+  } catch (err) {
+    res.status(500).json({
+      message: err.message
+    });
+  }
+};
