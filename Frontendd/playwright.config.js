@@ -13,9 +13,18 @@ export default defineConfig({
     video: 'retain-on-failure',
   },
 
-  webServer: {
+ webServer: [
+  {
+    command: 'cd ../backend && npm install && npm run dev',
+    port: 5050,
+    reuseExistingServer: !process.env.CI,
+    timeout: 120 * 1000,
+  },
+  {
     command: 'npm run dev',
     port: 5173,
     reuseExistingServer: !process.env.CI,
+    timeout: 120 * 1000,
   },
+],
 });
