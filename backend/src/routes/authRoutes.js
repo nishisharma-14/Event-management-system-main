@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import rateLimit from 'express-rate-limit';
 import { signup, login, me, updateProfile } from '../controllers/authController.js';
 import { authenticate } from '../middleware/auth.js';
 import {
@@ -32,5 +31,3 @@ router.get('/me', authenticate, me);
 router.put('/profile', authenticate, updateProfile);
 
 export default router;
-
-
