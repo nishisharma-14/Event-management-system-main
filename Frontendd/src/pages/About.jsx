@@ -8,7 +8,7 @@ const About = () => {
             <SEO 
                 title="About Us"
                 description="Learn about eventone's mission to revolutionize event management. Discover how we're empowering organizers and event enthusiasts worldwide."
-                url="/about"
+                url="/about-us"
             />
             <AboutBlock />
         </div>

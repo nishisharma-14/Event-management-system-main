@@ -8,9 +8,14 @@ import { Helmet } from 'react-helmet-async';
  * @param {string} ogImage - Open Graph image URL (optional)
  * @param {string} url - Page URL (optional, auto-detected)
  */
-const SEO = ({ title, description, ogImage = '/Mvpblocks.webp', url = '' }) => {
-  const baseUrl = 'http://localhost:5173'; // Update to production URL when deployed
-  const fullUrl = url ? `${baseUrl}${url}` : baseUrl + window.location.pathname;
+const SEO = ({ title, description, ogImage, url = '' }) => {
+  // Get site URL from environment or current window origin
+  const siteUrl = import.meta.env.VITE_SITE_URL?.replace(/\/$/, '') || (typeof window !== 'undefined' ? window.location.origin : '');
+  const path = url || (typeof window !== 'undefined' ? window.location.pathname : '');
+  const fullUrl = siteUrl && path ? `${siteUrl}${path}` : siteUrl || path;
+  
+  // Build absolute image URL (prefer provided image, fallback to public image)
+  const absoluteOgImage = ogImage ? (ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}`) : `${siteUrl}/Mvpblocks.webp`;
   const appName = 'eventone';
 
   return (
@@ -23,7 +28,7 @@ const SEO = ({ title, description, ogImage = '/Mvpblocks.webp', url = '' }) => {
       <meta property="og:url" content={fullUrl} />
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
-      <meta property="og:image" content={ogImage} />
+      <meta property="og:image" content={absoluteOgImage} />
       <meta property="og:site_name" content={appName} />
       
       {/* Twitter */}
@@ -31,7 +36,7 @@ const SEO = ({ title, description, ogImage = '/Mvpblocks.webp', url = '' }) => {
       <meta name="twitter:url" content={fullUrl} />
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />
-      <meta name="twitter:image" content={ogImage} />
+      <meta name="twitter:image" content={absoluteOgImage} />
       
       {/* Additional metadata */}
       <meta name="application-name" content={appName} />
