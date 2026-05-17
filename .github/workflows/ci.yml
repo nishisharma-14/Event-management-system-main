@@ -186,6 +186,17 @@ jobs:
     name: "🎭 Playwright E2E Tests"
     runs-on: ubuntu-latest
 
+    services:
+      mongodb:
+        image: mongo:6
+        options: >-
+          --health-cmd "mongosh --eval 'db.adminCommand({ ping: 1 })' || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 27017:27017
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -211,24 +222,34 @@ jobs:
         working-directory: backend
         run: |
           echo "Starting backend in background..."
-          JWT_SECRET="test-secret-key-for-ci" MONGO_URI="mongodb://127.0.0.1:27017/event_mgmt_test" PORT=5050 NODE_ENV=test npm start &
+          mkdir -p ci-logs
+          JWT_SECRET="test-secret-key-for-ci" \
+          MONGO_URI="mongodb://127.0.0.1:27017/event_mgmt_test" \
+          PORT=5050 \
+          NODE_ENV=test \
+          npm start > ci-logs/backend.log 2>&1 &
+          echo $! > ci-logs/backend.pid
 
       - name: Wait for backend to be ready
         run: |
-          for i in {1..30}; do
-            if curl -s http://localhost:5050/api/events > /dev/null; then
-              echo "Backend server is ready!"
+          set -e
+          for i in {1..60}; do
+            if curl -s http://localhost:5050/api/events > /dev/null 2>&1; then
+              echo "✅ Backend server is ready!"
               exit 0
             fi
-            echo "Waiting for backend... ($i/30)"
+            echo "⏳ Waiting for backend... ($i/60)"
             sleep 2
           done
-          echo "Backend server failed to start"
+          echo "❌ Backend server failed to start"
+          echo "--- Backend logs start ---"
+          cat ci-logs/backend.log || true
+          echo "--- Backend logs end ---"
           exit 1
 
       - name: Run Playwright tests
         working-directory: Frontendd
-        run: npx playwright test
+        run: npx playwright test --reporter=list
         env:
           CLIENT_URL: "http://localhost:5173"
           API_URL: "http://localhost:5050"
