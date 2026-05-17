@@ -47,7 +47,7 @@ export default function CustomerDashboard() {
       setLoading(false);
     }
   };
-
+ 
   const fetchRegistrations = async () => {
     try {
       setLoading(true);
@@ -179,12 +179,6 @@ const upcomingEvents = registrations.filter(
     );
 
   }
-
-
-
-
-  
- 
 
 return (
   <div className="min-h-screen bg-background text-foreground pt-32 px-4 sm:px-6 lg:px-8 font-sans selection:bg-purple-500/30 relative overflow-hidden">
@@ -446,7 +440,7 @@ return (
                             {reg.event?.date
                               ? new Date(reg.event.date).toLocaleDateString()
                               : "TBA"}{" "}
-                            • {reg.event?.location}
+                            â€¢ {reg.event?.location}
                           </p>
                         </div>
                       </div>
