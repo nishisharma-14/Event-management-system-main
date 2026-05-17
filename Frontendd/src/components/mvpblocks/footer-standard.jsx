@@ -300,7 +300,9 @@ export default function FooterStandard() {
             <Heart className="h-3 w-3 text-rose-500 fill-rose-500" />
           </p>
         </div>
-      </div>
+        </div>  {/* Close grid container from line 263 */}
+        </div>  {/* Close divider container from line 259 */}
+      </div>    {/* Close bottom section from line 238 */}
 
       {/* Legal Modal */}
       <LegalModal

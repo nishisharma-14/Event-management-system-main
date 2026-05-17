@@ -222,17 +222,32 @@ jobs:
         working-directory: backend
         run: |
           echo "Starting backend in background..."
-          mkdir -p ci-logs
+          mkdir -p ../ci-logs
+          
+          # Start with verbose logging
           JWT_SECRET="test-secret-key-for-ci" \
           MONGO_URI="mongodb://127.0.0.1:27017/event_mgmt_test" \
           PORT=5050 \
           NODE_ENV=test \
-          npm start > ci-logs/backend.log 2>&1 &
-          echo $! > ci-logs/backend.pid
+          npm start > ../ci-logs/backend.log 2>&1 &
+          
+          BACKEND_PID=$!
+          echo $BACKEND_PID > ../ci-logs/backend.pid
+          
+          # Give server time to start
+          sleep 3
+          
+          # Check if process is still running
+          if ! kill -0 $BACKEND_PID 2>/dev/null; then
+            echo "❌ Backend process died immediately"
+            echo "--- Backend logs ---"
+            cat ../ci-logs/backend.log || echo "No logs found"
+            exit 1
+          fi
+          echo "✅ Backend process started (PID: $BACKEND_PID)"
 
       - name: Wait for backend to be ready
         run: |
-          set -e
           for i in {1..60}; do
             if curl -s http://localhost:5050/api/events > /dev/null 2>&1; then
               echo "✅ Backend server is ready!"
@@ -242,9 +257,9 @@ jobs:
             sleep 2
           done
           echo "❌ Backend server failed to start"
-          echo "--- Backend logs start ---"
-          cat ci-logs/backend.log || true
-          echo "--- Backend logs end ---"
+          echo ""
+          echo "--- Backend logs ---"
+          cat ci-logs/backend.log 2>/dev/null || echo "No logs found"
           exit 1
 
       - name: Run Playwright tests
