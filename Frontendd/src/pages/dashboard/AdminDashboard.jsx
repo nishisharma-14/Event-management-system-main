@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, X, Calendar, MapPin, Building, Shield, Users, Activity, TrendingUp, Download, Trash2 } from 'lucide-react';
+import { Check, X, Calendar, MapPin, Building, Shield, Users, Activity, TrendingUp, Download, Trash2, MessageSquare, AlertTriangle } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { Textarea } from '../../components/ui/textarea';
 import { useAuth } from '../../context/AuthContext';
@@ -16,9 +16,11 @@ export default function AdminDashboard() {
     const [activeTab, setActiveTab] = useState('Pending Reviews');
     const [allEvents, setAllEvents] = useState([]);
     const [allUsers, setAllUsers] = useState([]);
+
     const [rejectingEvent, setRejectingEvent] = useState(null);
     const [rejectReason, setRejectReason] = useState('');
     const [rejectLoading, setRejectLoading] = useState(false);
+
 
     useEffect(() => {
         if (activeTab === 'Pending Reviews') {
@@ -88,13 +90,19 @@ export default function AdminDashboard() {
         }
     };
 
-    const handleAction = async (eventId, action) => {
+    const handleAction = async (eventId, action, reason) => {
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch(`${API_BASE_URL}/api/admin/events/${eventId}/${action}`, {
+            const fetchOptions = {
                 method: 'POST',
                 headers: { Authorization: `Bearer ${token}` }
-            });
+            };
+            // Send rejection reason in body if rejecting
+            if (action === 'reject' && reason) {
+                fetchOptions.headers['Content-Type'] = 'application/json';
+                fetchOptions.body = JSON.stringify({ rejectionReason: reason });
+            }
+            const res = await fetch(`${API_BASE_URL}/api/admin/events/${eventId}/${action}`, fetchOptions);
             if (res.ok) {
                 // Remove from pending
                 setPendingEvents(prev => prev.filter(e => e._id !== eventId));
@@ -107,6 +115,7 @@ export default function AdminDashboard() {
             console.error(`Failed to ${action} event`, error);
         }
     };
+
 
     const handleRejectEvent = async () => {
         const trimmedReason = rejectReason.trim();
@@ -146,6 +155,7 @@ export default function AdminDashboard() {
         } finally {
             setRejectLoading(false);
         }
+
     };
 
     const handleUserAction = async (userId, action) => {
@@ -374,10 +384,12 @@ export default function AdminDashboard() {
                                                             <Button
                                                                 variant="ghost"
                                                                 size="sm"
+
                                                                 onClick={() => {
                                                                     setRejectingEvent(event);
                                                                     setRejectReason('');
                                                                 }}
+
                                                                 className="text-red-500 hover:text-red-600 hover:bg-red-500/10 h-9"
                                                             >
                                                                 Reject
@@ -436,9 +448,16 @@ export default function AdminDashboard() {
                                                     {new Date(event.date).toLocaleDateString()}
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    <span className={`text-xs px-2 py-0.5 rounded-full capitalize ${event.status === 'approved' ? 'bg-green-500/10 text-green-500' : event.status === 'rejected' ? 'bg-red-500/10 text-red-500' : 'bg-yellow-500/10 text-yellow-500'}`}>
-                                                        {event.status}
-                                                    </span>
+                                                    <div className="flex flex-col gap-1">
+                                                        <span className={`text-xs px-2 py-0.5 rounded-full capitalize w-fit ${event.status === 'approved' ? 'bg-green-500/10 text-green-500' : event.status === 'rejected' ? 'bg-red-500/10 text-red-500' : 'bg-yellow-500/10 text-yellow-500'}`}>
+                                                            {event.status}
+                                                        </span>
+                                                        {event.status === 'rejected' && event.rejectionReason && (
+                                                            <span className="text-[11px] text-red-400/80 italic truncate max-w-[200px]" title={event.rejectionReason}>
+                                                                "{event.rejectionReason}"
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 </td>
                                                 <td className="px-6 py-4 text-right">
                                                     <Button size="sm" variant="secondary" onClick={() => setSelectedEvent(event)} className="h-8 hover:bg-purple-500/10 hover:text-purple-500 transition-colors">
@@ -563,6 +582,7 @@ export default function AdminDashboard() {
                                         Download Participants CSV
                                     </Button>
                                     <Button
+
                                         onClick={() => {
                                             setSelectedEvent(null);
                                             setRejectingEvent(selectedEvent);
@@ -572,6 +592,7 @@ export default function AdminDashboard() {
                                         className="w-full justify-center border-red-500/30 text-red-600 hover:bg-red-500/10"
                                     >
                                         <Trash2 className="w-4 h-4 mr-2" />
+
                                         Reject Event
                                     </Button>
                                 </div>
@@ -581,13 +602,16 @@ export default function AdminDashboard() {
                 )}
             </AnimatePresence>
 
+
             <AnimatePresence>
                 {rejectingEvent && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
+
                             className="bg-white text-zinc-950 w-full max-w-lg rounded-2xl border border-zinc-200 shadow-2xl overflow-hidden"
                         >
                             <div className="p-6">
@@ -631,15 +655,18 @@ export default function AdminDashboard() {
                                             setRejectReason('');
                                         }}
                                         disabled={rejectLoading}
+
                                     >
                                         Cancel
                                     </Button>
                                     <Button
+
                                         onClick={handleRejectEvent}
                                         disabled={rejectLoading || rejectReason.trim().length < 20}
                                         className="bg-red-600 hover:bg-red-700 text-white"
                                     >
                                         {rejectLoading ? 'Rejecting...' : 'Reject Event'}
+
                                     </Button>
                                 </div>
                             </div>

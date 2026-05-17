@@ -4,7 +4,11 @@ import { sendEventRejectionEmail } from '../utils/email.js';
 
 export const approveEvent = async (req, res) => {
   try {
-    const event = await Event.findByIdAndUpdate(req.params.id, { status: 'approved' }, { new: true });
+    const event = await Event.findByIdAndUpdate(
+      req.params.id,
+      { status: 'approved' },
+      { new: true }
+    );
     if (!event) return res.status(404).json({ message: 'Not found' });
     res.json({ event });
   } catch (err) {
@@ -37,7 +41,7 @@ export const rejectEvent = async (req, res) => {
       }
     }
 
-    res.json({ event });
+    res.json({ message: 'Event rejected', event });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

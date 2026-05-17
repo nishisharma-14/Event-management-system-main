@@ -12,7 +12,7 @@ const eventSchema = new mongoose.Schema(
     organizer: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     posterUrl: { type: String },
     status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
-    rejectionReason: { type: String, trim: true },
+    rejectionReason: { type: String, trim: true, default: '' },
     tags: [{ type: String }],
     averageRating: { type: Number, default: 0 },
   },
