@@ -238,31 +238,6 @@ export default function CustomerDashboard() {
         }
     };
 
-    // Filter registrations based on date
-   const upcomingEvents = [];
-
-const pastEvents = [
-  {
-    _id: "abc12345678",
-    status: "attended",
-    event: {
-      title: "AI Innovation Summit",
-      description: "A tech conference on AI and innovation.",
-      date: "2025-04-10",
-      location: "Mumbai",
-      category: "Technology",
-    },
-  },
-];
-
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center min-h-screen bg-[#09090b]">
-                <div className="w-8 h-8 border-2 border-rose-500 border-t-transparent rounded-full animate-spin" />
-            </div>
-        );
-    }
-  }, [searchParams]);
 
   const fetchRegistrations = useCallback(async () => {
     try {
