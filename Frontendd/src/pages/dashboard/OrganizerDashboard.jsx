@@ -169,6 +169,30 @@ const handleDeleteEvent = async (eventId) => {
     }
 };
 
+    const resetForm = () => {
+        setEditingEventId(null);
+        setFormData({
+            title: '', description: '', date: '', time: '',
+            location: '', category: '', price: '', capacity: '', poster: null
+        });
+    };
+
+    const handleEditResubmit = (event) => {
+        setEditingEventId(event._id);
+        const eventDate = new Date(event.date);
+        setFormData({
+            title: event.title || '',
+            description: event.description || '',
+            date: eventDate.toISOString().split('T')[0],
+            time: eventDate.toTimeString().slice(0, 5),
+            location: event.location || '',
+            category: event.category || '',
+            price: event.price || '',
+            capacity: event.capacity || '',
+            poster: null,
+        });
+    };
+
     const handleInputChange = (e) => {
         const { name, value, files } = e.target;
         if (name === 'poster') {
