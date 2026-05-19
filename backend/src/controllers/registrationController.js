@@ -1,18 +1,10 @@
-<<<<<<< HEAD
 import Event from '../models/Event.js';
 import Registration from '../models/Registration.js';
 import { generateQRCodeDataUrl } from '../utils/qrcode.js';
 import { sendEmail } from '../utils/email.js';
 import path from 'path';
 import { createObjectCsvWriter } from 'csv-writer';
-=======
-import Event from "../models/Event.js";
-import Registration from "../models/Registration.js";
-import { generateQRCodeDataUrl } from "../utils/qrcode.js";
-import { sendEmail } from "../utils/email.js";
-import path from "path";
-import { createObjectCsvWriter } from "csv-writer";
->>>>>>> aa4b200a01b0638f945a797777911483cff9e986
+
 
 export const registerForEvent = async (req, res) => {
   try {
@@ -88,7 +80,6 @@ export const registerForEvent = async (req, res) => {
       registration,
       message: isFull ? 'Added to waitlist' : 'Successfully registered',
     });
-<<<<<<< HEAD
   } catch (err) {
     console.error('ERROR:', err);
     res.status(500).json({ message: err.message });
@@ -99,7 +90,6 @@ export const registerForEvent = async (req, res) => {
 export const myRegistrations = async (req, res) => {
   try {
     const regs = await Registration.find({ user: req.user.id }).populate('event');
-=======
 
     
     const payload = JSON.stringify({ userId: req.user.id, eventId: event._id, at: Date.now() });
@@ -160,64 +150,27 @@ export const myRegistrations = async (req, res) => {
 };
 
 // fetching registrations with waiting position
-export const myRegistrations = async (req, res) => {
-  try {
-    const regs = await Registration.find({ user: req.user.id }).populate("event");
->>>>>>> aa4b200a01b0638f945a797777911483cff9e986
 
-    const registrationsWithPosition = await Promise.all(
-      regs.map(async (reg) => {
-        let waitlistPosition = null;
-
-<<<<<<< HEAD
-        if (reg.status === 'waitlisted') {
-          const peopleAhead = await Registration.countDocuments({
-            event: reg.event._id,
-            status: 'waitlisted',
-=======
-        if (reg.status === "waitlisted") {
-          const peopleAhead = await Registration.countDocuments({
-            event: reg.event._id,
-            status: "waitlisted",
->>>>>>> aa4b200a01b0638f945a797777911483cff9e986
-            createdAt: { $lt: reg.createdAt },
-          });
-          waitlistPosition = peopleAhead + 1;
-        }
-
-        return { ...reg.toObject(), waitlistPosition };
-      }),
-    );
-
-    res.json({ registrations: registrationsWithPosition });
-  } catch (err) {
-<<<<<<< HEAD
-    console.error('ERROR:', err);
-=======
-    console.error("ERROR:", err);
->>>>>>> aa4b200a01b0638f945a797777911483cff9e986
-    res.status(500).json({ message: err.message });
-  }
-};
 
 export const participantsForEvent = async (req, res) => {
   try {
-<<<<<<< HEAD
-    const regs = await Registration.find({ event: req.params.id }).populate('user', 'name email');
-    res.json({ participants: regs });
+    const regs = await Registration.find({
+      event: req.params.id,
+    }).populate('user', 'name email');
+
+    res.json({
+      participants: regs,
+    });
+
   } catch (err) {
     console.error('ERROR:', err);
-=======
-    const regs = await Registration.find({ event: req.params.id }).populate("user", "name email");
-    res.json({ participants: regs });
-  } catch (err) {
-    console.error("ERROR:", err);
->>>>>>> aa4b200a01b0638f945a797777911483cff9e986
-    res.status(500).json({ message: err.message });
+
+    res.status(500).json({
+      message: err.message,
+    });
   }
 };
 
-<<<<<<< HEAD
 // Secure check-in handler
 export const checkInParticipant = async (req, res) => {
   try {
@@ -260,34 +213,22 @@ export const checkInParticipant = async (req, res) => {
     }
 
     // Perform atomic update
-=======
-export const checkInParticipant = async (req, res) => {
-  try {
-    const status = req.body.status || "attended";
-
->>>>>>> aa4b200a01b0638f945a797777911483cff9e986
-    const reg = await Registration.findOneAndUpdate(
-      { user: req.body.userId, event: req.params.id },
-      { status, checkedInAt: status === 'attended' ? new Date() : undefined },
-      { new: true },
+    const registration = await Registration.findOneAndUpdate(
+      { event: req.params.id, user: req.body.userId },
+      { status },
+      { new: true }
     );
-
-    if (!reg) {
-      return res.status(404).json({ message: 'Registration not found' });
+    if (!registration) {
+      return res.status(404).json({ message: 'Registration not found for this user and event' });
     }
-
-    // Promote waitlisted user when someone cancels
-    if (status === 'cancelled') {
-      await promoteFromWaitlist(req.params.id);
-    }
-
-    res.json({ registration: reg });
+    return res.json({ message: 'Check-in updated', registration });
   } catch (err) {
-<<<<<<< HEAD
-    console.error(`[ERROR] Check-in failed for event ${req.params.id}:`, err.message);
-    res.status(500).json({ message: 'Internal server error' });
+    console.error('[checkInParticipant] Error:', err);
+    return res.status(500).json({ message: err.message });
   }
 };
+
+
 
 export const exportParticipantsCsv = async (req, res) => {
   try {
@@ -313,11 +254,6 @@ export const exportParticipantsCsv = async (req, res) => {
   } catch (err) {
     console.error('ERROR:', err);
     res.status(500).json({ message: err.message });
-=======
-    console.error("ERROR:", err);
-    res.status(500).json({ message: err.message });
-    
->>>>>>> aa4b200a01b0638f945a797777911483cff9e986
   }
 };
 
@@ -325,7 +261,6 @@ export const checkRegistrationStatus = async (req, res) => {
   try {
     const registration = await Registration.findOne({
       user: req.user.id,
-<<<<<<< HEAD
       event: req.params.id,
       status: { $ne: 'cancelled' },
     });
@@ -334,38 +269,15 @@ export const checkRegistrationStatus = async (req, res) => {
       isRegistered: registration?.status === 'registered',
       isWaitlisted: registration?.status === 'waitlisted',
       registration,
-=======
       event: req.params.id
     });
-
-    res.status(200).json({
-      registered: !!registration,
-      isRegistered: !!registration,
-      registration
->>>>>>> aa4b200a01b0638f945a797777911483cff9e986
-    });
   } catch (err) {
     console.error('ERROR:', err);
     res.status(500).json({ message: err.message });
   }
 };
 
-<<<<<<< HEAD
-=======
-export const myRegistrations = async (req, res) => {
-  try {
-    const registrations = await Registration.find({
-      user: req.user.id
-    }).populate('event');
 
-    res.status(200).json({ registrations });
-  } catch (err) {
-    console.error('ERROR:', err);
-    res.status(500).json({ message: err.message });
-  }
-};
-
->>>>>>> aa4b200a01b0638f945a797777911483cff9e986
 // promoting from waitlist to registered
 export const promoteFromWaitlist = async (eventId) => {
   const nextRegistration = await Registration.findOne({
@@ -402,78 +314,29 @@ export const promoteFromWaitlist = async (eventId) => {
     });
   } catch (_) {}
 };
-<<<<<<< HEAD
-=======
-
-    for (const registration of registrations) {
-      const row = [
-        registration.user?.name || '',
-        registration.user?.email || '',
-        registration.status || '',
-        registration.createdAt
-          ? new Date(
-            registration.createdAt
-          ).toISOString()
-          : ''
-      ];
-
-      res.write(row.map(esc).join(',') + '\n');
-    }
-
-    res.end();
-  } catch (err) {
-    console.error('ERROR:', err);
-    res.status(500).json({ message: err.message });
-  }
-};
-
-
->>>>>>> aa4b200a01b0638f945a797777911483cff9e986
 
 export const cancelRegistration = async (req, res) => {
-  // Only the customer who owns the registration can cancel it
-  // Cannot cancel if event.date is in the past
-  // Sets registration.status = 'cancelled'; does not delete the document (for audit trail)
   try {
     const { id } = req.params;
     const userId = req.user.id;
-
     const registration = await Registration.findById(id).populate('event');
-
     if (!registration) {
       return res.status(404).json({ message: 'Registration not found' });
     }
-
-    // Owner check
     if (registration.user.toString() !== userId) {
       return res.status(403).json({ message: 'Unauthorized' });
     }
-
-    // Already cancelled
     if (registration.status === 'cancelled') {
       return res.status(400).json({ message: 'Already cancelled' });
     }
-
-    // Past event check
     const eventDate = new Date(registration.event.date);
     if (eventDate < new Date()) {
       return res.status(400).json({ message: 'Cannot cancel past events' });
     }
-
     registration.status = 'cancelled';
     await registration.save();
-
-    res.status(200).json({
-      message: 'Registration cancelled successfully',
-      registration,
-    });
+    res.status(200).json({ message: 'Registration cancelled successfully', registration });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
-<<<<<<< HEAD
-=======
-
-
-
->>>>>>> aa4b200a01b0638f945a797777911483cff9e986
