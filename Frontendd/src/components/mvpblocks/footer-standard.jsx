@@ -96,7 +96,7 @@ export default function FooterStandard() {
                         }}
                         className="text-xs text-slate-600 hover:text-rose-600 transition-colors cursor-pointer">
                         {item.name}
-                      </a>
+                      </Link>
                     </li>
                   ))}
                 </ul>

@@ -154,21 +154,17 @@ export default function CustomerDashboard() {
     };
 
     // Filter registrations based on date
-   const upcomingEvents = [];
-
-const pastEvents = [
-  {
-    _id: "abc12345678",
-    status: "attended",
-    event: {
-      title: "AI Innovation Summit",
-      description: "A tech conference on AI and innovation.",
-      date: "2025-04-10",
-      location: "Mumbai",
-      category: "Technology",
-    },
-  },
-];
+    const upcomingEvents = registrations.filter(
+        (reg) =>
+          reg.event?.date &&
+          new Date(reg.event.date) >= new Date()
+      );
+      
+      const pastEvents = registrations.filter(
+        (reg) =>
+          reg.event?.date &&
+          new Date(reg.event.date) < new Date()
+      );
 
     if (loading) {
         return (
