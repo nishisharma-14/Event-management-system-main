@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, ChevronRight, Github, Lock, Search } from 'lucide-react';
 import { Button } from '../ui/button.jsx';
 import { Link } from 'react-router-dom';
 
 export default function GradientHero() {
-  const placeholders = [
+  const placeholders = useMemo(() => [
     "Search for events...",
     "Search for communities...",
     "Search for organizers..."
-  ];
-  
+  ], []);
+
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [inputValue, setInputValue] = useState("");
 
@@ -19,7 +19,7 @@ export default function GradientHero() {
       setPlaceholderIndex((prev) => (prev + 1) % placeholders.length);
     }, 3000);
     return () => clearInterval(interval);
-  }, []);
+  }, [placeholders]);
 
   return (
 
@@ -42,7 +42,7 @@ export default function GradientHero() {
 
             transition={{ duration: 0.5, delay: 0.1 }}
             className="text-center text-4xl tracking-tight sm:text-6xl lg:text-7xl"
- 
+
           >
             <span className="text-foreground">Run Events </span>
             <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">Smarter</span>
