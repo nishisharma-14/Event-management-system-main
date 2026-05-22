@@ -20,6 +20,15 @@
         "doc",
         "infra"
       ]
+    },
+    {
+      "login": "nishisharma-14",
+      "name": "Nishi Sharma",
+      "avatar_url": "https://avatars.githubusercontent.com/u/184118285?v=4",
+      "profile": "https://nishisharma-14.github.io/portfolio/",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7
