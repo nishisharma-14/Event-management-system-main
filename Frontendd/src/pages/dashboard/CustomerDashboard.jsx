@@ -5,7 +5,7 @@ import { io } from 'socket.io-client';
 import { Button } from '../../components/ui/button';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { API_BASE_URL } from '../../config';
 import ConfirmationModal from '../../components/ui/confirmation-modal';
 import { useDebounce } from '../../hooks/useDebounce';
@@ -17,6 +17,7 @@ const CATEGORIES = ['Tech', 'Sports', 'Cultural', 'Workshop', 'Music', 'Other'];
 
 export default function CustomerDashboard() {
   const { user } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [registrations, setRegistrations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('Upcoming Tickets');
@@ -25,8 +26,8 @@ export default function CustomerDashboard() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRegistrationId, setSelectedRegistrationId] = useState(null);
   const [highlightedEvents, setHighlightedEvents] = useState({});
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
+  const [searchQuery, setSearchQuery] = useState(() => searchParams.get('q') || '');
+  const [selectedCategory, setSelectedCategory] = useState(() => searchParams.get('category') || '');
   const [isFetching, setIsFetching] = useState(false);
 
   const ticketRef = useRef(null);
@@ -35,14 +36,7 @@ export default function CustomerDashboard() {
   const joinedEventIdsRef = useRef([]);
   const highlightTimeoutsRef = useRef({});
 
-  const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
   const debouncedSearch = useDebounce(searchQuery, 400);
-
-  useEffect(() => {
-    setSearchQuery(searchParams.get('q') || '');
-    setSelectedCategory(searchParams.get('category') || '');
-  }, [searchParams]);
 
   useEffect(() => {
     return () => {
@@ -136,11 +130,15 @@ export default function CustomerDashboard() {
   }, []);
 
   useEffect(() => {
-    if (activeTab === 'Browse Events') {
-      fetchAvailableEvents();
-    } else {
-      fetchRegistrations();
-    }
+    const timeoutId = setTimeout(() => {
+      if (activeTab === 'Browse Events') {
+        fetchAvailableEvents();
+      } else {
+        fetchRegistrations();
+      }
+    }, 0);
+
+    return () => clearTimeout(timeoutId);
   }, [activeTab, fetchAvailableEvents, fetchRegistrations]);
 
   useEffect(() => {
