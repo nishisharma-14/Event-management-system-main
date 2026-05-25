@@ -31,6 +31,7 @@ const buildBulkSummary = (results, eventIds) => {
 
   return { succeeded, failed, errors };
 };
+import { createNotification } from './notificationController.js';
 
 export const approveEvent = async (req, res) => {
   try {
@@ -38,8 +39,22 @@ export const approveEvent = async (req, res) => {
       req.params.id,
       { status: 'approved' },
       { new: true }
-    );
+    ).populate('organizer', 'name email');
     if (!event) return res.status(404).json({ message: 'Not found' });
+    
+    if (event.organizer) {
+      try {
+        await createNotification(
+          event.organizer._id,
+          'event_approved',
+          `Your event ${event.title} has been approved`,
+          `/events/${event._id}`
+        );
+      } catch (notifErr) {
+        console.error('Failed to create event approval notification:', notifErr);
+      }
+    }
+
     res.json({ event });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -68,6 +83,19 @@ export const rejectEvent = async (req, res) => {
         await sendEventRejectionEmail(event.organizer.email, event, reason);
       } catch (err) {
         console.warn(`Failed to send rejection email for event ${event._id}: ${err.message}`);
+      }
+    }
+
+    if (event.organizer) {
+      try {
+        await createNotification(
+          event.organizer._id,
+          'event_rejected',
+          `Your event ${event.title} was not approved`,
+          `/events/${event._id}`
+        );
+      } catch (notifErr) {
+        console.error('Failed to create event rejection notification:', notifErr);
       }
     }
 
